@@ -6,7 +6,7 @@ class Assignment:
     """
     This class represents an assignment.
     """
-    assignment_number: int
+    number: int
     target: str
     driving_time: int
     boxes_expected: int
@@ -16,5 +16,3 @@ class Assignment:
     reward: int
     penalty_time: int
     penalty_value: int
-
-    boxes_so_far: int

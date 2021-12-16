@@ -1,4 +1,7 @@
+import random
 from dataclasses import dataclass
+
+from src.assignment import Assignment
 
 
 @dataclass
@@ -12,24 +15,11 @@ class Truck:
 
 
 @dataclass
-class TruckState:
-    """
-    This class represents the state of a truck at a given time.
-    """
-    truck: Truck
-    loaded_boxes: int
-    previously_loaded_boxes: int
-    loaded_boxes: list[int]
-    previously_loaded_boxes: list[int]
-    current_position: chr
-    target: chr
-    time_on_the_road: int
-
-
-@dataclass
 class Route:
     """
-    This class represents the rout one truck will drive. Routes consist of states.
+    This class represents the route one truck will drive. Routes consist of one or more single trips.
     """
     truck: Truck
-    states: list[TruckState]
+    assignments: list[int]
+
+    time_so_far: int = 0

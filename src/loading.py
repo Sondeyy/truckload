@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+from random import random
+
+import numpy as np
 
 from src.assignment import Assignment
 from src.truck import Route
@@ -12,6 +15,20 @@ class Loading:
     routes: list[Route]
     assignments: list[Assignment]
 
+    @classmethod
+    def get_random_loading(cls, trucks, assignments):
+        routes = []
+
+        for truck in trucks:
+            picked_assignments = random.sample(assignments, random.randint(1, len(assignments)))
+            assignments = [a for a in assignments if a not in picked_assignments]
+            routes.append(Route(truck, picked_assignments))
+
+        return cls(
+            routes=routes,
+            assignments=assignments
+        )
+
     def is_valid(self) -> bool:
         """
         Check if the loading is valid.
@@ -22,7 +39,7 @@ class Loading:
         # TODO
         pass
 
-    def evaluate_loading(self) -> int:
+    def evaluate(self) -> int:
         """
         Evaluates the loading in aspect to money.
 
@@ -30,16 +47,19 @@ class Loading:
         :rtype: int
         """
         money = 0
-        for route in self.routes:
-            for state in route.states[1:-1]:
-                for assignment in self.assignments:
-                    if assignment.target == state.current_position:
-                        assignment.boxes_so_far += state.previously_loaded_boxes - state.loaded_boxes
 
-                        if assignment.boxes_so_far == assignment.boxes_expected:
-                            if state.time_on_the_road < assignment.bonus_time:
-                                money += assignment.bonus_value
-                            if state.time_on_the_road > assignment.penalty_time:
-                                money -= assignment.penalty_value
-                            money += assignment.reward
+        for route in self.routes:
+            for a in route.assignments:
+                assignment = self.assignments[a]
+
+                route.time_so_far += assignment.driving_time
+
+                if route.time_so_far < assignment.bonus_time:
+                    money += assignment.bonus_value
+                elif route.time_so_far > assignment.penalty_time:
+                    money -= assignment.penalty_value
+                money += assignment.reward
+
+                route.time_so_far += assignment.driving_time
+
         return money
