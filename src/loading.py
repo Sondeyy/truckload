@@ -52,6 +52,12 @@ class Loading:
         for route in self.routes:
             for assignment in route.assignments:
 
+                if route.truck.maximum_payload < assignment.box_weight * assignment.boxes_expected:
+                    return int("-inf")
+
+                if route.truck.maximum_boxes < assignment.boxes_expected:
+                    return int("-inf")
+
                 route.time_so_far += assignment.driving_time
 
                 if route.time_so_far < assignment.bonus_time:
