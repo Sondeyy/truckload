@@ -1,9 +1,7 @@
+import sys
 from dataclasses import dataclass
 import random
 
-import numpy as np
-
-from src.assignment import Assignment
 from src.truck import Route
 
 
@@ -13,7 +11,10 @@ class Loading:
     This class represents a configuration of routes and the assignments, which should be fulfilled with the routes.
     """
     routes: list[Route]
-    assignments: list[Assignment]
+    reward: int = 0
+
+    # def __len__(self):
+    #     return 1
 
     @classmethod
     def get_random_loading(cls, trucks, assignments):
@@ -21,31 +22,46 @@ class Loading:
 
         for truck in trucks:
             picked_assignments = random.sample(assignments, random.randint(0, len(assignments)))
+            picked_assignments = [pa for pa in picked_assignments if pa.boxes_expected < truck.maximum_boxes]
+            picked_assignments = [pa for pa in picked_assignments if
+                                  pa.boxes_expected * pa.box_weight < truck.maximum_payload]
             assignments = [a for a in assignments if a not in picked_assignments]
 
             routes.append(Route(truck, picked_assignments))
 
         return cls(
             routes=routes,
-            assignments=assignments
         )
 
-    def is_valid(self) -> bool:
+    @staticmethod
+    def crossover(loading1, loading2):
         """
-        Check if the loading is valid.
-        :return: true if the loading is valid, false otherwise.
-        :rtype: bool
+        Crossover interchanges values of two loadings.
+
+        :param loading1:
+        :param loading2:
+        :return:
+        """
+        # TODO combine and cross, but keep valid states
+
+        return loading1, loading2
+
+    @staticmethod
+    def mutate(loading):
         """
 
-        # TODO
-        pass
+        :param loading: loading to mutate
+        :return: crossed loading
+        """
+        # TODO mutate, but keep valid state
 
-    def evaluate(self) -> int:
+        return loading
+
+    def evaluate(self):
         """
         Evaluates the loading in aspect to money.
 
         :return: how much money this Loading will generate
-        :rtype: int
         """
         money = 0
 
@@ -53,10 +69,12 @@ class Loading:
             for assignment in route.assignments:
 
                 if route.truck.maximum_payload < assignment.box_weight * assignment.boxes_expected:
-                    return int("-inf")
+                    self.reward = -1
+                    return (-1,)
 
                 if route.truck.maximum_boxes < assignment.boxes_expected:
-                    return int("-inf")
+                    self.reward = -1
+                    return (-1,)
 
                 route.time_so_far += assignment.driving_time
 
@@ -67,5 +85,5 @@ class Loading:
                 money += assignment.reward
 
                 route.time_so_far += assignment.driving_time
-
-        return money
+        self.reward = money
+        return (money,)
