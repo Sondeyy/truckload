@@ -20,6 +20,6 @@ class Route:
     This class represents the route one truck will drive. Routes consist of one or more single trips.
     """
     truck: Truck
-    assignments: list[int]
+    assignments: list[Assignment]
 
     time_so_far: int = 0
