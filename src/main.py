@@ -64,7 +64,7 @@ def main():
 
     toolbox.register("mate", Loading.crossover)
     toolbox.register("mutate", Loading.mutate)
-    toolbox.register("select", tools.selTournament, tournsize=3, fit_attr="reward")
+    toolbox.register("select", tools.selBest)
     toolbox.register("evaluate", creator.Individual.evaluate)
 
     pop = toolbox.population(n=50)
@@ -116,7 +116,6 @@ def main():
     fits = [ind.fitness.values[0] for ind in pop]
 
     print_fitness(fits)
-
 
 
 if __name__ == '__main__':
