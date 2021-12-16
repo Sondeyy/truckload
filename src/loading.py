@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from random import random
+import random
 
 import numpy as np
 
@@ -20,8 +20,9 @@ class Loading:
         routes = []
 
         for truck in trucks:
-            picked_assignments = random.sample(assignments, random.randint(1, len(assignments)))
+            picked_assignments = random.sample(assignments, random.randint(0, len(assignments)))
             assignments = [a for a in assignments if a not in picked_assignments]
+
             routes.append(Route(truck, picked_assignments))
 
         return cls(
@@ -49,8 +50,7 @@ class Loading:
         money = 0
 
         for route in self.routes:
-            for a in route.assignments:
-                assignment = self.assignments[a]
+            for assignment in route.assignments:
 
                 route.time_so_far += assignment.driving_time
 
