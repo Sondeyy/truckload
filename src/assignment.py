@@ -3,13 +3,18 @@ from dataclasses import dataclass
 
 @dataclass
 class Assignment:
+    """
+    This class represents an assignment.
+    """
     assignment_number: int
     target: str
     driving_time: int
-    boxes: int
+    boxes_expected: int
     box_weight: int
     bonus_time: int
     bonus_value: int
     reward: int
     penalty_time: int
     penalty_value: int
+
+    boxes_so_far: int
