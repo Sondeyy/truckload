@@ -16,7 +16,7 @@ class Loading:
         string = ""
         for route in self.routes:
             string += f"{str(route)}\n"
-        string += f" --> Reward: {str(self.reward)}"
+        string += f" --> Reward: {str(self.reward)} €"
         return string
 
     @classmethod

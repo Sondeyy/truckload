@@ -9,7 +9,13 @@ from src.loading import Loading
 from src.truck import Truck
 
 
-def print_fitness(fits, description=""):
+def print_fitness(fits, description="") -> None:
+    """
+    Print common statistical values of a fitness list.
+
+    :param fits: fitness list
+    :param description: additional description, e.g 'after'
+    """
     length = len(fits)
     mean = sum(fits) / length
     sum2 = sum(x * x for x in fits)
@@ -24,10 +30,16 @@ def print_fitness(fits, description=""):
     print("")
 
 
-def main():
-    truck_file = "../data/Evo11/Evo11_LKW.csv"
-    assignment_file = "../data/Evo11/Evo11_Auftraege.csv"
+def read_from_csv(truck_file: str, assignment_file: str) -> (list[Truck], list[Assignment]):
+    """
+    reads given csv files and returns trucks and assignment objects
 
+    if no penalty or bonus is given, the vales are set to 0
+
+    :param truck_file: path of truck file
+    :param assignment_file: path of assignment file
+    :return: trucks and assignments in lists as a tuple
+    """
     trucks = []
     with open(truck_file) as f:
         rows = reader(f, delimiter=";")
@@ -57,11 +69,22 @@ def main():
                 penalty_value=int(assignment[9]) if len(assignment[9]) > 0 and not assignment[9].isspace() else 0,
             ))
 
+    return trucks, assignments
+
+
+def main():
+    truck_file = "../data/Evo11/Evo11_LKW.csv"
+    assignment_file = "../data/Evo11/Evo11_Auftraege.csv"
+
+    trucks, assignments = read_from_csv(truck_file, assignment_file)
+
     # random.seed(42)
 
+    # create custom types
     creator.create("FitnessMin", base.Fitness, weights=(1.0,))
     creator.create("Individual", Loading, fitness=creator.FitnessMin)
 
+    # register functions in toolbox
     toolbox = base.Toolbox()
     toolbox.register("individual", creator.Individual.get_random_loading, trucks, assignments)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -71,8 +94,11 @@ def main():
     toolbox.register("select", tools.selBest)
     toolbox.register("evaluate", creator.Individual.evaluate)
 
+    # create first population
     pop = toolbox.population(n=50)
 
+    # register hall of fame
+    # the 3 best individuals of all generations will be gathered here
     hof = tools.HallOfFame(3)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
@@ -80,6 +106,7 @@ def main():
     stats.register("min", np.min)
     stats.register("max", np.max)
 
+    # probabilities
     crossover_probability, mutation_probability, generations = 0.5, 0.2, 20
 
     # Evaluate the entire population
@@ -134,6 +161,7 @@ def main():
 
     print_fitness(fits, "after")
 
+    # print hall of fame
     print("--- HALL OF FAME ---")
     print("\n\n".join(map(str, hof)))
 
