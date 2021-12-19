@@ -16,3 +16,6 @@ class Assignment:
     reward: int
     penalty_time: int
     penalty_value: int
+
+    def __str__(self):
+        return str(self.number)

@@ -1,6 +1,5 @@
-import sys
-from dataclasses import dataclass
 import random
+from dataclasses import dataclass
 
 from src.truck import Route
 
@@ -13,8 +12,12 @@ class Loading:
     routes: list[Route]
     reward: int = 0
 
-    # def __len__(self):
-    #     return 1
+    def __str__(self):
+        string = ""
+        for route in self.routes:
+            string += f"{str(route)}\n"
+        string += f" --> Reward: {str(self.reward)}"
+        return string
 
     @classmethod
     def get_random_loading(cls, trucks, assignments):
@@ -68,14 +71,6 @@ class Loading:
         for route in self.routes:
             for assignment in route.assignments:
 
-                if route.truck.maximum_payload < assignment.box_weight * assignment.boxes_expected:
-                    self.reward = -1
-                    return (-1,)
-
-                if route.truck.maximum_boxes < assignment.boxes_expected:
-                    self.reward = -1
-                    return (-1,)
-
                 route.time_so_far += assignment.driving_time
 
                 if route.time_so_far < assignment.bonus_time:
@@ -85,5 +80,7 @@ class Loading:
                 money += assignment.reward
 
                 route.time_so_far += assignment.driving_time
+
         self.reward = money
+
         return (money,)

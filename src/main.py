@@ -1,19 +1,21 @@
 import random
 from csv import reader
+
 import numpy as np
-from deap import base, creator, tools, algorithms
+from deap import base, creator, tools
 
-from src.loading import Loading
 from src.assignment import Assignment
-from src.truck import Truck, Route
+from src.loading import Loading
+from src.truck import Truck
 
 
-def print_fitness(fits):
+def print_fitness(fits, description=""):
     length = len(fits)
     mean = sum(fits) / length
     sum2 = sum(x * x for x in fits)
     std = abs(sum2 / length - mean ** 2) ** 0.5
 
+    print(description)
     print("  Min %s" % min(fits))
     print("  Max %s" % max(fits))
     print("  Avg %s" % mean)
@@ -55,6 +57,8 @@ def main():
                 penalty_value=int(assignment[9]) if len(assignment[9]) > 0 and not assignment[9].isspace() else 0,
             ))
 
+    # random.seed(42)
+
     creator.create("FitnessMin", base.Fitness, weights=(1.0,))
     creator.create("Individual", Loading, fitness=creator.FitnessMin)
 
@@ -69,7 +73,14 @@ def main():
 
     pop = toolbox.population(n=50)
 
-    crossover_probability, mutation_probability, generations = 0.5, 0.2, 40
+    hof = tools.HallOfFame(3)
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", np.mean)
+    stats.register("std", np.std)
+    stats.register("min", np.min)
+    stats.register("max", np.max)
+
+    crossover_probability, mutation_probability, generations = 0.5, 0.2, 20
 
     # Evaluate the entire population
     fitnesses = map(toolbox.evaluate, pop)
@@ -78,28 +89,32 @@ def main():
 
     fits = [ind.fitness.values[0] for ind in pop]
 
-    print_fitness(fits)
+    print_fitness(fits, "before")
+
+    hof.update(pop)
 
     for generation in range(generations):
-        # print(f"{generation=}")
+        # print(f"{generation=}  Fitness={max([ind.fitness.values[0] for ind in pop])}")
 
         # Select the next generation individuals
-        offspring = toolbox.select(pop, 30)
+        offspring = toolbox.select(pop, 10)
         # Clone the selected individuals
         offspring = list(map(toolbox.clone, offspring))
 
         # append random ones
-        offspring.extend(toolbox.population(20))
+        offspring.extend(toolbox.population(40))
 
         # Apply crossover and mutation on the offspring
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < crossover_probability:
+                continue
                 toolbox.mate(child1, child2)
                 del child1.fitness.values
                 del child2.fitness.values
 
         for mutant in offspring:
             if random.random() < mutation_probability:
+                continue
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
 
@@ -109,13 +124,18 @@ def main():
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
 
+        hof.update(offspring)
+
         # The population is entirely replaced by the offspring
         pop[:] = offspring
 
     # Gather all the fitnesses in one list and print the stats
     fits = [ind.fitness.values[0] for ind in pop]
 
-    print_fitness(fits)
+    print_fitness(fits, "after")
+
+    print("--- HALL OF FAME ---")
+    print("\n\n".join(map(str, hof)))
 
 
 if __name__ == '__main__':

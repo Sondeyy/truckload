@@ -13,6 +13,9 @@ class Truck:
     maximum_boxes: int
     maximum_payload: int
 
+    def __str__(self):
+        return str(self.truck_number)
+
 
 @dataclass
 class Route:
@@ -23,3 +26,7 @@ class Route:
     assignments: list[Assignment]
 
     time_so_far: int = 0
+
+    def __str__(self):
+        assignment_strs = " ".join(map(str, self.assignments))
+        return f"Truck: {str(self.truck)}   Assignments: {assignment_strs}"
