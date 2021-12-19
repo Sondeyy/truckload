@@ -95,7 +95,7 @@ def main():
     toolbox.register("evaluate", creator.Individual.evaluate)
 
     # create first population
-    pop = toolbox.population(n=50)
+    pop = toolbox.population(n=100)
 
     # register hall of fame
     # the 3 best individuals of all generations will be gathered here
@@ -107,7 +107,10 @@ def main():
     stats.register("max", np.max)
 
     # probabilities
-    crossover_probability, mutation_probability, generations = 0.5, 0.2, 20
+    # crossover between 0.8 and 0.95
+    # mutation between 0.001 and 0.05
+    # see Xin-She Yang, ... Tiew On Ting, in Bio-Inspired Computation in Telecommunications, 2015
+    crossover_probability, mutation_probability, generations = 0.8, 0.03, 50
 
     # Evaluate the entire population
     fitnesses = map(toolbox.evaluate, pop)
@@ -124,24 +127,22 @@ def main():
         # print(f"{generation=}  Fitness={max([ind.fitness.values[0] for ind in pop])}")
 
         # Select the next generation individuals
-        offspring = toolbox.select(pop, 10)
+        offspring = toolbox.select(pop, 80)
         # Clone the selected individuals
         offspring = list(map(toolbox.clone, offspring))
 
         # append random ones
-        offspring.extend(toolbox.population(40))
+        offspring.extend(toolbox.population(20))
 
         # Apply crossover and mutation on the offspring
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < crossover_probability:
-                continue
                 toolbox.mate(child1, child2)
                 del child1.fitness.values
                 del child2.fitness.values
 
         for mutant in offspring:
             if random.random() < mutation_probability:
-                continue
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
 
