@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass
 
-from src.truck import Route
+from truck import Route
 
 
 @dataclass
@@ -34,14 +34,6 @@ class Loading:
         :return: random loading
         """
         routes = []
-
-        # TODO improve
-        # current problem: not all assignments get assigned every time
-        # proposed new strategy: loop over assignments, get all possible trucks, select a random one
-        # if no possible truck left: backtracking (select another random one in the previous iteration)
-
-        # all assignments have to be assigned
-        # all routes have to be valid
 
         for truck in trucks:
             # pick a random number of random assignments for each truck and remove those that can't be done

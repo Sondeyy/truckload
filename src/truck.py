@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.assignment import Assignment
+from assignment import Assignment
 
 
 @dataclass

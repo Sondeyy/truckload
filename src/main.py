@@ -1,12 +1,13 @@
+import configparser
 import random
 from csv import reader
 
 import numpy as np
 from deap import base, creator, tools
 
-from src.assignment import Assignment
-from src.loading import Loading
-from src.truck import Truck
+from assignment import Assignment
+from loading import Loading
+from truck import Truck
 
 
 def print_fitness(fits, description="") -> None:
@@ -73,11 +74,12 @@ def read_from_csv(truck_file: str, assignment_file: str) -> (list[Truck], list[A
 
 
 def main():
-    truck_file = "../data/Evo11/Evo11_LKW.csv"
-    assignment_file = "../data/Evo11/Evo11_Auftraege.csv"
+    config = configparser.RawConfigParser()
+    config.read("../truckload.config")
 
-    trucks, assignments = read_from_csv(truck_file, assignment_file)
+    trucks, assignments = read_from_csv(config.get("files", "truck_file"), config.get("files", "assignment_file"))
 
+    # for debugging
     # random.seed(42)
 
     # create custom types
@@ -93,13 +95,14 @@ def main():
     toolbox.register("mutate", Loading.mutate)
     toolbox.register("select", tools.selBest)
     toolbox.register("evaluate", creator.Individual.evaluate)
-    initial_population = 100
+
     # create first population
-    pop = toolbox.population(n=initial_population)
+    initial_population_size = int(config.get("population", "initial_population_size"))
+    pop = toolbox.population(n=initial_population_size)
 
     # register hall of fame
-    # the 3 best individuals of all generations will be gathered here
-    hof = tools.HallOfFame(3)
+    # the best individuals of all generations will be gathered here
+    hof = tools.HallOfFame(int(config.get("population", "hall_of_fame")))
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean)
     stats.register("std", np.std)
@@ -110,7 +113,13 @@ def main():
     # crossover between 0.8 and 0.95
     # mutation between 0.001 and 0.05
     # see Xin-She Yang, ... Tiew On Ting, in Bio-Inspired Computation in Telecommunications, 2015
-    crossover_probability, mutation_probability, generations = 0.8, 0.001, 50
+    crossover_probability = float(config.get("probabilities", "p_crossover"))
+    mutation_probability = float(config.get("probabilities", "p_mutate"))
+
+    generations = int(config.get("population", "generations"))
+
+    keep = float(config.get("population", "keep"))  # how many individuals proceed into next generation
+    new_random = float(config.get("population", "new_random"))  # how many newly created random individuals join
 
     # Evaluate the entire population
     fitnesses = map(toolbox.evaluate, pop)
@@ -118,7 +127,6 @@ def main():
         ind.fitness.values = fit
 
     fits = [ind.fitness.values[0] for ind in pop]
-
     print_fitness(fits, "before")
 
     hof.update(pop)
@@ -127,12 +135,12 @@ def main():
         # print(f"{generation=}  Fitness={max([ind.fitness.values[0] for ind in pop])}")
 
         # Select the next generation individuals
-        offspring = toolbox.select(pop, 0.8*initial_population)
+        offspring = toolbox.select(pop, int(keep * initial_population_size))
         # Clone the selected individuals
         offspring = list(map(toolbox.clone, offspring))
 
         # append random ones
-        offspring.extend(toolbox.population(0.2*initial_population))
+        offspring.extend(toolbox.population(int(new_random * initial_population_size)))
 
         # Apply crossover and mutation on the offspring
         changed = []
