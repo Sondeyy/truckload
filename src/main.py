@@ -81,8 +81,8 @@ def main():
     # random.seed(42)
 
     # create custom types
-    creator.create("FitnessMin", base.Fitness, weights=(1.0,))
-    creator.create("Individual", Loading, fitness=creator.FitnessMin)
+    creator.create("Fitness", base.Fitness, weights=(1.0,))
+    creator.create("Individual", Loading, fitness=creator.Fitness)
 
     # register functions in toolbox
     toolbox = base.Toolbox()
@@ -110,7 +110,7 @@ def main():
     # crossover between 0.8 and 0.95
     # mutation between 0.001 and 0.05
     # see Xin-She Yang, ... Tiew On Ting, in Bio-Inspired Computation in Telecommunications, 2015
-    crossover_probability, mutation_probability, generations = 0.8, 0.03, 50
+    crossover_probability, mutation_probability, generations = 0.8, 0.001, 50
 
     # Evaluate the entire population
     fitnesses = map(toolbox.evaluate, pop)
@@ -135,16 +135,23 @@ def main():
         offspring.extend(toolbox.population(20))
 
         # Apply crossover and mutation on the offspring
+        changed = []
+
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < crossover_probability:
+                changed.append(toolbox.clone(child1))
+                changed.append(toolbox.clone(child2))
                 toolbox.mate(child1, child2)
                 del child1.fitness.values
                 del child2.fitness.values
 
         for mutant in offspring:
             if random.random() < mutation_probability:
+                changed.append(toolbox.clone(mutant))
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
+
+        offspring.extend(changed)
 
         # Evaluate the individuals with an invalid fitness
         invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
