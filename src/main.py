@@ -93,9 +93,9 @@ def main():
     toolbox.register("mutate", Loading.mutate)
     toolbox.register("select", tools.selBest)
     toolbox.register("evaluate", creator.Individual.evaluate)
-
+    initial_population = 100
     # create first population
-    pop = toolbox.population(n=100)
+    pop = toolbox.population(n=initial_population)
 
     # register hall of fame
     # the 3 best individuals of all generations will be gathered here
@@ -127,12 +127,12 @@ def main():
         # print(f"{generation=}  Fitness={max([ind.fitness.values[0] for ind in pop])}")
 
         # Select the next generation individuals
-        offspring = toolbox.select(pop, 80)
+        offspring = toolbox.select(pop, 0.8*initial_population)
         # Clone the selected individuals
         offspring = list(map(toolbox.clone, offspring))
 
         # append random ones
-        offspring.extend(toolbox.population(20))
+        offspring.extend(toolbox.population(0.2*initial_population))
 
         # Apply crossover and mutation on the offspring
         changed = []
