@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 
 from src.assignment import Assignment
